@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.1"
+    compileSdkVersion 31
 
     defaultConfig {
         applicationId "com.fishing.billionaire.android"
         minSdkVersion 19
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
@@ -21,9 +20,7 @@ android {
         }
     }
     repositories {
-        maven{
-            url "http://bx-mvn.dataverse.cn:18081/repository/maven-releases/"
-        }
+        maven { url "https://mvn-bx.dataverse.cn/repository/maven-releases/"}
     }
 
 }
@@ -35,5 +32,6 @@ dependencies {
     def billing_version = "3.0.0"
 
     implementation "com.android.billingclient:billing:$billing_version"
-    implementation 'com.aly.sdk:tasdk:4.1.0.1'
+    implementation 'com.aly.sdk:tasdk:4.1.1.2'
+    implementation 'com.google.android.gms:play-services-base:17.3.0'
 }

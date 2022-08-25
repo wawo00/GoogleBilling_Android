@@ -17,23 +17,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="initBilling"
-        android:text="initSDK"
+        android:text="initBilling"
         ></Button>
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="initTasdk"
-        android:text="initTasdk"
+        android:text="initTASDK"
         ></Button>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="showGoods"
-        android:text="ShowGoods"
-        ></Button>
-
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

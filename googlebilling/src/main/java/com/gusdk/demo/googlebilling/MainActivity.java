@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private String productId = "600269";
 
     private SkuDetails skuDetails;
+    private String userId="gamer001";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
                 for (Purchase purchase : purchases) {
                     handlePurchase(purchase);
                     ZFLogReport.logReport("user001", purchase.getOriginalJson(), purchase.getSignature());
-
                 }
             } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
                 // Handle an error caused by a user cancelling the purchase flow.
@@ -72,12 +72,10 @@ public class MainActivity extends AppCompatActivity {
                 ConsumeParams.newBuilder()
                         .setPurchaseToken(purchase.getPurchaseToken())
                         .build();
-        ConsumeResponseListener listener = new ConsumeResponseListener() {
+                 ConsumeResponseListener listener = new ConsumeResponseListener() {
             @Override
             public void onConsumeResponse(BillingResult billingResult, String purchaseToken) {
-
                 Log.i(TAG, "onConsumeResponse: billingResult " + billingResult.toString() + " token : " + purchaseToken);
-
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     logAndToast("onConsumeResponse ok");
                 } else {
@@ -102,14 +100,14 @@ public class MainActivity extends AppCompatActivity {
             public void onBillingSetupFinished(BillingResult billingResult) {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     // The BillingClient is ready. You can query purchases here.
-                    logAndToast("onBillingSetupFinished " + billingResult.getResponseCode());
+                    logAndToast("onBillingSetupFinished SUCCESS" );
+                }else{
+                    logAndToast("onBillingSetupFinished FAIL，errocode:"+billingResult.getResponseCode()  );
                 }
             }
 
             @Override
             public void onBillingServiceDisconnected() {
-                // Try to restart the connection on the next request to
-                // Google Play by calling the startConnection() method.
                 logAndToast("onBillingServiceDisconnected ");
             }
         });
@@ -126,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void showGoods(View view) {
+    public void pay(View view) {
         List<String> skuList = new ArrayList<>();
         skuList.add(skuId);
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
@@ -137,22 +135,18 @@ public class MainActivity extends AppCompatActivity {
                     public void onSkuDetailsResponse(BillingResult billingResult,
                                                      List<SkuDetails> skuDetailsList) {
                         // Process the result.
-                        logAndToast("onSkuDetailsResponse  billingResult is " + billingResult.getResponseCode() + " msg " + billingResult.getDebugMessage() + " details " + skuDetailsList.toString());
-
                         if (skuDetailsList != null && skuDetailsList.size() > 0) {
                             skuDetails = skuDetailsList.get(0);
+                                //启动购买
+                                BillingFlowParams purchaseParams =
+                                        BillingFlowParams.newBuilder()
+                                                .setSkuDetails(skuDetails)
+                                                .setObfuscatedAccountId(userId)
+                                                .build();
+                            billingClient.launchBillingFlow(MainActivity.this, purchaseParams);
                         }
                     }
                 });
-    }
-
-    public void pay(View view) {
-// Retrieve a value for "skuDetails" by calling querySkuDetailsAsync().
-        BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
-                .setSkuDetails(skuDetails)
-                .build();
-        int responseCode = billingClient.launchBillingFlow(this, billingFlowParams).getResponseCode();
-
     }
 
     public void initTasdk(View view) {
