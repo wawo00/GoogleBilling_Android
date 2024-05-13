@@ -16,8 +16,11 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.ConsumeResponseListener;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
@@ -127,26 +130,65 @@ public class MainActivity extends AppCompatActivity {
     public void pay(View view) {
         List<String> skuList = new ArrayList<>();
         skuList.add(skuId);
-        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
-        billingClient.querySkuDetailsAsync(params.build(),
-                new SkuDetailsResponseListener() {
-                    @Override
-                    public void onSkuDetailsResponse(BillingResult billingResult,
-                                                     List<SkuDetails> skuDetailsList) {
-                        // Process the result.
-                        if (skuDetailsList != null && skuDetailsList.size() > 0) {
-                            skuDetails = skuDetailsList.get(0);
+
+        if (isProductDetailsSupported()) {
+            ArrayList<QueryProductDetailsParams.Product> productList = new ArrayList<>();
+            productList.add(QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId("up_basic_sub")
+                    .setProductType(BillingClient.ProductType.INAPP)
+                    .build());
+            QueryProductDetailsParams queryProductDetailsParams = QueryProductDetailsParams.newBuilder()
+                    .setProductList(productList)
+                    .build();
+            billingClient.queryProductDetailsAsync(
+                    queryProductDetailsParams,
+                    new ProductDetailsResponseListener() {
+                        public void onProductDetailsResponse(BillingResult billingResult,
+                                                             List<ProductDetails> productDetailsList) {
+                            // check billingResult
+                            // process returned productDetailsList
+                            if (productDetailsList != null && productDetailsList.size() > 0) {
+                                skuDetails = productDetailsList.get(0);
                                 //启动购买
                                 BillingFlowParams purchaseParams =
                                         BillingFlowParams.newBuilder()
                                                 .setSkuDetails(skuDetails)
                                                 .setObfuscatedAccountId(userId)
                                                 .build();
-                            billingClient.launchBillingFlow(MainActivity.this, purchaseParams);
+                                billingClient.launchBillingFlow(MainActivity.this, purchaseParams);
+                            }
                         }
                     }
-                });
+            );
+
+        }else{
+            SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+            params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+            billingClient.querySkuDetailsAsync(params.build(),
+                    new SkuDetailsResponseListener() {
+                        @Override
+                        public void onSkuDetailsResponse(BillingResult billingResult,
+                                                         List<SkuDetails> skuDetailsList) {
+                            // Process the result.
+                            if (skuDetailsList != null && skuDetailsList.size() > 0) {
+                                skuDetails = skuDetailsList.get(0);
+                                //启动购买
+                                BillingFlowParams purchaseParams =
+                                        BillingFlowParams.newBuilder()
+                                                .setSkuDetails(skuDetails)
+                                                .setObfuscatedAccountId(userId)
+                                                .build();
+                                billingClient.launchBillingFlow(MainActivity.this, purchaseParams);
+                            }
+                        }
+                    });
+        }
+
+    }
+
+    public boolean isProductDetailsSupported(){
+       BillingResult billingResult= billingClient.isFeatureSupported(BillingClient.FeatureType.PRODUCT_DETAILS);
+       return billingResult.getResponseCode()!=BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED;
     }
 
     public void initTasdk(View view) {
