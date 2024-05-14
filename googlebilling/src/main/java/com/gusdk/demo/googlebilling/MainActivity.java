@@ -134,25 +134,29 @@ public class MainActivity extends AppCompatActivity {
         if (isProductDetailsSupported()) {
             ArrayList<QueryProductDetailsParams.Product> productList = new ArrayList<>();
             productList.add(QueryProductDetailsParams.Product.newBuilder()
-                    .setProductId("up_basic_sub")
+                    .setProductId("product_id_example")
                     .setProductType(BillingClient.ProductType.INAPP)
                     .build());
             QueryProductDetailsParams queryProductDetailsParams = QueryProductDetailsParams.newBuilder()
                     .setProductList(productList)
                     .build();
-            billingClient.queryProductDetailsAsync(
-                    queryProductDetailsParams,
-                    new ProductDetailsResponseListener() {
+            billingClient.queryProductDetailsAsync(queryProductDetailsParams, new ProductDetailsResponseListener() {
                         public void onProductDetailsResponse(BillingResult billingResult,
                                                              List<ProductDetails> productDetailsList) {
                             // check billingResult
                             // process returned productDetailsList
                             if (productDetailsList != null && productDetailsList.size() > 0) {
-                                skuDetails = productDetailsList.get(0);
+                                ProductDetails productDetails = productDetailsList.get(0);
+
+                                ArrayList<BillingFlowParams.ProductDetailsParams> productList = new ArrayList<>();
+                                productList.add(BillingFlowParams.ProductDetailsParams.newBuilder()
+                                        .setProductDetails(productDetailsList.get(0))
+//                                        .setOfferToken(selectedOfferToken)// 如果是一次性消耗的商品不要调用这个方法
+                                        .build());
                                 //启动购买
                                 BillingFlowParams purchaseParams =
                                         BillingFlowParams.newBuilder()
-                                                .setSkuDetails(skuDetails)
+                                                .setProductDetailsParamsList(productList)
                                                 .setObfuscatedAccountId(userId)
                                                 .build();
                                 billingClient.launchBillingFlow(MainActivity.this, purchaseParams);
@@ -160,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
             );
+
 
         }else{
             SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
